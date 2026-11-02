@@ -1,46 +1,33 @@
-# Screen Paint Lab (Clatasha)
+# Screenshot Lab — Clatasha
 
-Unrooted Android diagnostic/prototype for studying secure window capture and transparent drawing overlays. Designed for Samsung Galaxy A14 (Android 10+ compatible; minSdk 29). This app **does not bypass** WhatsApp View Once protections, and no results are guaranteed for protected apps.
+A premium-styled Android screen capture utility built from the Screen Paint Lab research prototype. The app is **not** a tool for bypassing protected screens. Android's `FLAG_SECURE` restrictions remain in force.
 
-## Features
+## Features in v1.0 beta
 
-1. **MediaProjection screen probe:** With Android's consent prompt, captures one PNG approximately every 2 seconds (maximum 40 per session). Android secure-window protections remain in force. All captures are saved to `Pictures/ScreenPaintLab` using MediaStore.
-2. **Protected test screen:** Synthetic colorful drawing with a toggle for `FLAG_SECURE`; compare captured frames with protection enabled and disabled.
-3. **Transparent painting overlay:** Tap **Enable/start paint overlay**, allow "Appear on top", then start again. The floating bar opens in **TOUCH APP** mode, allowing interaction with underlying apps. Tap **DRAW** to draw strokes over the current screen, **TOUCH APP** to interact with the underlying app again, and **SAVE PNG** to save only the strokes. It never reads pixels from behind the overlay.
-4. **Saved-frame count:** Shows successfully written probe PNGs (cumulative since install) and storage path.
+- **One-tap screenshots**: user-approved MediaProjection capture, automatically returns to the previous screen and saves a PNG to `Pictures/ScreenshotLab`.
+- **MP4 screen recording**: 30 FPS video with selectable 720p/1080p resolution (short-edge target) saved to `Movies/ScreenshotLab`. Use the notification's **Stop** action to finish. Video is currently silent; microphone and internal audio aren't implemented.
+- **On-screen markup**: user-approved capture session with a floating draw toolbar (DRAW/TOUCH, SAVE, UNDO, COLOR, CLEAR, CLOSE). The **SAVE** action hides the toolbar, captures the normal screen, and composites the drawing paths onto it, then saves a PNG. Normal screen backgrounds are supported; protected/secure regions remain black.
+- **Custom app icon**, dark UI and gallery shortcuts.
+- No root, account or internet permission required.
 
-## Building the APK
+## Build
 
-### Option A: GitHub Actions (no local Android Studio installation)
+The GitHub workflow creates a debug APK (Java 17, AGP 8.6.1, Gradle 8.7, Android SDK 35). Download `ScreenshotLab-debug-apk` from the latest successful GitHub Actions workflow artifact. Extract `app-debug.apk` before installing.
 
-1. Create a new **private** GitHub repository (e.g. `ScreenPaintLab`).
-2. Upload the **contents of this directory** (including `.github/workflows/build-apk.yml`) to the repository root. GitHub's web upload sometimes skips hidden folders; verify `.github/workflows/build-apk.yml` exists.
-3. On the Actions tab, run **Build debug APK**, or push to `main` to start it.
-4. On the finished workflow run, download the `ScreenPaintLab-debug-apk` artifact, unzip it, and install `app-debug.apk` on your phone. Android may require enabling "Install unknown apps" for the app you use to open the APK.
+Because GitHub Actions uses a new debug keystore on each build, you may need to **uninstall the earlier Screen Paint Lab debug APK** before installing this release due to a signature mismatch. Any Gallery screenshots remain in their normal media folders.
 
-The GitHub workflow is provided but was **not run or verified** in this environment.
+## Quick start
 
-### Option B: Android Studio
+1. Tap **TAKE SCREENSHOT**, approve Android's screen sharing prompt, and select **Entire screen** if asked. The app moves to the background and saves the next screen after a short delay.
+2. Tap **START RECORDING**, approve the prompt, then use the foreground notification's **Stop** action. The saved video appears in Gallery / My Files → Movies / ScreenshotLab.
+3. Tap **START MARKUP**, grant **Appear on top** the first time, then approve screen capture. Draw with the overlay; use **TOUCH** to interact with the app underneath and **DRAW** to resume drawing. Tap **SAVE** for the background plus your drawing.
 
-1. Create a new **Empty Views Activity** Java project in Android Studio, with package `com.clatasha.screenpaintlab` and minimum API 29.
-2. Copy this project's `app/src/main/` directory into the new project, replacing the generated files. Copy the relevant values from `app/build.gradle` (compileSdk 35, minSdk 29, targetSdk 34, Android Gradle Plugin 8.6.1) and AndroidManifest.xml. Or open this repository as a Gradle project; if your Android Studio needs a Gradle wrapper JAR, generate a wrapper using `gradle wrapper --gradle-version 8.7`.
-3. Build → Build APK(s), then install `app-debug.apk`.
+## Limitations
 
-No Android SDK was available in the authoring environment, so **the APK has not been compiled or tested on the Samsung A14**. If a build issue occurs, inspect the Gradle output; source is intentionally dependency-free Java.
+- WhatsApp View Once and other protected content are excluded from capture by Android. The app deliberately makes no attempt to override `FLAG_SECURE`.
+- On some devices Android may revoke a projection session on screen lock, another capture, or user action. Start a new capture if this happens.
+- Current release supports portrait-oriented sessions best; rotating the device mid-recording may letterbox the video.
+- The on-screen floating toolbar is hidden briefly during save, but a capture may fail if Android stops the session.
+- Permission is required for every new screen-capture session (Android 14+).
 
-## Test protocol
-
-1. First, use **Start screen probe**, grant Android screen-sharing permission (choose **Entire screen** if Android asks what to share), and tap **Open protected sample**.
-2. Let a few frames be captured with **FLAG_SECURE ON**, toggle **OFF**, and let a few more frames be captured. Return to the app and stop the probe.
-3. In **Gallery** or **My Files → Pictures → ScreenPaintLab**, compare PNGs. On protected windows Android normally excludes the colors/text from the captured screen.
-4. Test the painting overlay on the sample. Try **TOUCH APP** to interact with the screen, **DRAW** to trace shapes, then **SAVE PNG**. The saved PNG contains only paint strokes.
-5. A WhatsApp View Once message is consumable: if you choose to test it, expect it may be permanently unavailable afterward. Any saved capture that doesn't include the protected photo is the expected security behavior, **not** a bug in the drawing algorithm.
-
-## Caveats
-
-- Screen-capture consent is mandatory and must be granted by the phone's user.
-- Secure windows may appear black or empty in captures. The painting overlay doesn't circumvent this.
-- Android or WhatsApp may hide floating overlays on sensitive screens.
-- The probe limits storage to 40 PNGs per session but can still consume substantial disk space; remove files manually from Gallery/My Files.
-- A capture will never recover a previously consumed View Once image.
-- This is an experimental debug build, not a verified production application.
+© 2026 Clatasha. Personal beta, no telemetry.
