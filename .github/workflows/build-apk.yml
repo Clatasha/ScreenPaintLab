@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/build-apk.yml'
       - 'ScreenPaintLab-source.zip'
+      - 'app/src/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle.properties'
@@ -26,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Extract Android app source
         run: |
-          unzip -o ScreenPaintLab-source.zip
+          unzip -n ScreenPaintLab-source.zip
           test -f app/build.gradle
           test -f app/src/main/AndroidManifest.xml
       - name: Set up Java 17
